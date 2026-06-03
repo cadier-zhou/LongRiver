@@ -8,7 +8,7 @@ on:
   schedule:
     # UTC 0:00 = 北京时间 8:00
     # 每天北京时间 8:00 执行一次
-    - cron: "0 0,12 * * *"   # UTC 0:00 (北京时间 8:00) 和 UTC 12:00 (北京时间 20:00)
+    - cron: "0 0,12 * * *"
   workflow_dispatch:  # 允许手动触发
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -21,11 +21,11 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4  # 升级到 v4，支持 Node.js 24
       with:
         fetch-depth: 0  # 获取完整历史，用于 diff
     
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v5  # 升级到 v5，支持 Node.js 24
       with:
         python-version: '3.9'  # 指定 Python 版本
     
@@ -48,10 +48,11 @@ jobs:
         git diff
       
     - name: Add & Commit
-      uses: EndBug/add-and-commit@v4.2.1
+      uses: EndBug/add-and-commit@v9  # 升级到 v9，支持 Node.js 24
       with:
         author_name: GitHub Actions Bot
         author_email: actions@github.com
+        default_author: github_actions  # 显式指定作者，避免警告
         message: "auto update: hydrology data $(date '+%Y-%m-%d %H:%M:%S')"
         add: './data/'  # 只提交 data 目录的变化
         push: true
