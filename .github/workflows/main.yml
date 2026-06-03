@@ -6,8 +6,10 @@ name: get-data
 # events but only for the master branch
 on:
   schedule:
-  - cron: "1/10 * * * *"
-  workflow_dispatch:
+    # UTC 0:00 = 北京时间 8:00
+    # 每天北京时间 8:00 执行一次
+    - cron: "0 0,12 * * *"   # UTC 0:00 (北京时间 8:00) 和 UTC 12:00 (北京时间 20:00)
+  workflow_dispatch:  # 允许手动触发
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,22 +22,36 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # 获取完整历史，用于 diff
     
     - uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # 指定 Python 版本
     
-    - name: setup other enviroment
+    - name: Setup other environment
       run: |
         pwd
         python --version
         pip install -U requests
+        pip install -U pytz  # 添加时区支持
 
     # Runs a single command using the runners shell
     - name: Run main.py
       run: python main.py
+      env:
+        TZ: 'Asia/Shanghai'  # 设置时区为北京时间
 
     - name: Check diff
-      run: git diff
+      run: |
+        git diff --stat
+        git diff
       
     - name: Add & Commit
       uses: EndBug/add-and-commit@v4.2.1
-
+      with:
+        author_name: GitHub Actions Bot
+        author_email: actions@github.com
+        message: "auto update: hydrology data $(date '+%Y-%m-%d %H:%M:%S')"
+        add: './data/'  # 只提交 data 目录的变化
+        push: true
